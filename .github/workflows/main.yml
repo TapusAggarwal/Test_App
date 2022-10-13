@@ -1,0 +1,29 @@
+name: Release Action On Push
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  test:
+    name: Lint code base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set output
+        id: vars
+        run: echo "ver=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v5
+        id: set-result
+        with:
+          script: return String("${{env.ver}}").substring(1)
+
+      - name: Create Release With Asset
+        id: Release-AIO
+        uses: Hs1r1us/Release-AIO@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{steps.set-result.outputs.result}}
+          release_name: ${{steps.set-result.outputs.result}}
+          asset_files: "./Releases"
